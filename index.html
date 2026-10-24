@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#10131b">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Multi Song Cutter</title>
 <style>
@@ -67,10 +67,11 @@ audio{width:100%;margin-top:12px}.wave{width:100%;height:90px;display:block;back
 </section>
 <section class="card">
   <p class="section-title">Privacy & limitations</p>
-  <p class="hint">Audio is processed locally in your browser; this page does not upload your music. Large files may exceed your phone's memory. MP3 export uses the LAME encoder library (lame.min.js) stored with the app, so it works offline. Use only audio you have permission to edit.</p>
+  <p class="hint">Audio is processed locally in your browser; this page does not upload your music. Large files may exceed your phone's memory. MP3 export uses the LAME encoder library loaded from a CDN, so an internet connection is required for encoding. Use only audio you have permission to edit.</p>
 </section>
 </main>
-<script src="lame.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js';document.head.appendChild(s)"></script>
+<script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
 <script src="app.js"></script>
+<script>if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(err => console.warn("Service worker registration failed", err))); }</script>
 </body>
 </html>

@@ -1,6 +1,25 @@
-const CACHE='multi-song-cutter-v2';
-const FILES=['./','./index.html','./app.js','./manifest.json','./lame.min.js','./icons/icon-192.png','./icons/icon-512.png','./icons/icon-512-maskable.png'];
-// Cache each file separately so one missing file (e.g. lame.min.js) does not break installation.
-self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>Promise.all(FILES.map(f=>c.add(f).catch(()=>{})))))});
-self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
-self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));
+const CACHE_NAME = 'multi-song-cutter-v4';
+const APP_SHELL = [
+  './', './index.html', './app.js', './manifest.json',
+  './icon-192.png', './icon-512.png', './screenshot-540x960.png'
+];
+self.addEventListener('install', event => {
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
+});
+self.addEventListener('activate', event => {
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim()));
+});
+self.addEventListener('fetch', event => {
+  const req = event.request;
+  if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
+  event.respondWith(caches.match(req).then(cached => {
+    if (cached) return cached;
+    return fetch(req).then(response => {
+      if (response && response.ok) {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
+      }
+      return response;
+    }).catch(() => caches.match('./index.html'));
+  }));
+});

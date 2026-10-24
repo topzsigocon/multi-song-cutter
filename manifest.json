@@ -1,32 +1,45 @@
 {
+  "id": "./",
   "name": "Multi Song Cutter",
   "short_name": "Song Cutter",
-  "description": "Cut long audio files into separate MP3 clips.",
-  "id": "./index.html",
-  "start_url": "./index.html",
+  "description": "Cut long audio files into separate MP3 clips with manual editing and silence detection.",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "portrait",
   "background_color": "#10131b",
   "theme_color": "#10131b",
+  "categories": [
+    "music",
+    "audio",
+    "utilities"
+  ],
+  "prefer_related_applications": false,
   "icons": [
     {
-      "src": "icons/icon-192.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icons/icon-512.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icons/icon-512-maskable.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     }
   ],
-  "orientation": "any"
+  "screenshots": [
+    {
+      "src": "screenshot-540x960.png",
+      "sizes": "540x960",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Multi Song Cutter audio editing screen"
+    }
+  ]
 }
