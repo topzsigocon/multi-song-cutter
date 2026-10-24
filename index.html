@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#10131b">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Multi Song Cutter</title>
+<style>
+:root{color-scheme:dark;--bg:#10131b;--panel:#1a2030;--line:#30394d;--accent:#77e0c0;--text:#f3f5fb;--muted:#aab4c8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,Segoe UI,sans-serif}
+header{padding:22px 18px 12px;background:linear-gradient(135deg,#202a3d,#111520)}h1{font-size:23px;margin:0 0 5px}header p{color:var(--muted);margin:0}
+main{padding:14px;max-width:800px;margin:auto}.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:13px}
+button,.filebtn{border:0;border-radius:11px;padding:12px 14px;background:var(--accent);color:#081710;font-weight:750;font-size:14px;cursor:pointer;display:inline-block;text-align:center}
+button.secondary{background:#303a50;color:var(--text)}button.danger{background:#5a2b3a;color:#fff}button:disabled{opacity:.45}
+input[type=file]{display:none}input[type=number],input[type=text],select{background:#0f1420;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px;width:100%;min-width:0}
+.row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}.row>*{flex:1}.muted{color:var(--muted)}.small{font-size:12px}.file-name{overflow-wrap:anywhere;margin-top:10px}
+audio{width:100%;margin-top:12px}.wave{width:100%;height:90px;display:block;background:#0d121c;border:1px solid var(--line);border-radius:10px;margin:10px 0;touch-action:pan-y}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.section-title{font-weight:800;margin:0 0 12px}.cutrow{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:7px;align-items:center;margin:8px 0;padding:9px;background:#111724;border-radius:10px}.cutrow input{padding:8px}.status{white-space:pre-wrap;color:var(--accent);font-size:13px;margin-top:9px}.hint{font-size:12px;color:var(--muted);line-height:1.5}.pill{display:inline-block;background:#2b3548;padding:4px 8px;border-radius:99px;font-size:12px}
+@media(max-width:480px){.cutrow{grid-template-columns:1fr 1fr}.cutrow .name{grid-column:1/-1}.cutrow button{grid-column:1/-1}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><h1>🎵 Multi Song Cutter</h1><p>Detect song boundaries, adjust cuts, and export MP3 clips.</p></header>
+<main>
+<section class="card">
+  <p class="section-title">1. Choose audio</p>
+  <div class="row">
+    <label class="filebtn" for="audioFile">Select audio file</label>
+    <button id="playBtn" class="secondary" disabled>▶ Play / Pause</button>
+  </div>
+  <input id="audioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg">
+  <div id="fileName" class="file-name muted">No file selected</div>
+  <audio id="player" controls hidden></audio>
+  <canvas id="wave" class="wave" width="900" height="180" aria-label="Audio waveform"></canvas>
+  <div class="hint">Waveform is a visual overview. Tap/click it to seek through the audio.</div>
+</section>
+<section class="card">
+  <p class="section-title">2. Detect song boundaries</p>
+  <div class="grid2">
+    <div><label for="threshold">Silence threshold (dB)</label><input id="threshold" type="number" value="-38" min="-70" max="-10"></div>
+    <div><label for="minSilence">Minimum silence (seconds)</label><input id="minSilence" type="number" value="0.8" min="0.2" max="10" step="0.1"></div>
+    <div><label for="minSong">Minimum song length (seconds)</label><input id="minSong" type="number" value="45" min="5" max="900"></div>
+    <div><label for="sensitivity">Smart detection sensitivity</label><select id="sensitivity"><option value="low">Low (fewer suggestions)</option><option value="medium" selected>Medium</option><option value="high">High (more suggestions)</option></select></div>
+  </div>
+  <div class="row" style="margin-top:12px">
+    <button id="silenceBtn" disabled>Detect silence</button>
+    <button id="smartBtn" class="secondary" disabled>Smart suggestions</button>
+  </div>
+  <p class="hint">Silence detection finds quiet gaps. Smart suggestions use changes in loudness and zero-crossing rate as rough clues; they are not guaranteed to identify song changes correctly.</p>
+  <div id="status" class="status">Choose an audio file to begin.</div>
+</section>
+<section class="card">
+  <p class="section-title">3. Review and edit cuts</p>
+  <div class="grid2" style="margin-bottom:12px">
+    <div><label for="bitrate">MP3 bitrate</label><select id="bitrate"><option value="128">128 kbps</option><option value="192" selected>192 kbps</option><option value="256">256 kbps</option><option value="320">320 kbps</option></select></div>
+    <div><label for="channels">Export channels</label><select id="channels"><option value="stereo" selected>Stereo (2 channels)</option><option value="mono">Mono (1 channel)</option></select></div>
+  </div>
+  <div class="row">
+    <button id="addBtn" class="secondary" disabled>＋ Add cut</button>
+    <button id="exportBtn" disabled>Export all as MP3</button>
+  </div>
+  <div class="hint" style="margin-top:9px">Start and end are seconds. Change the values to fine-tune each clip. Stereo 320 kbps uses more storage and may take longer to encode on a phone.</div>
+  <div id="cuts"></div>
+</section>
+<section class="card">
+  <p class="section-title">Privacy & limitations</p>
+  <p class="hint">Audio is processed locally in your browser; this page does not upload your music. Large files may exceed your phone's memory. MP3 export uses the LAME encoder library (lame.min.js) stored with the app, so it works offline. Use only audio you have permission to edit.</p>
+</section>
+</main>
+<script src="lame.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js';document.head.appendChild(s)"></script>
+<script src="app.js"></script>
+</body>
+</html>
